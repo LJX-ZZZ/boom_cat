@@ -1,0 +1,16 @@
+{
+  "name": "bomb-cat",
+  "version": "1.0.0",
+  "description": "💣 炸弹猫 - 网页卡牌游戏",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js --port 8080"
+  },
+  "dependencies": {
+    "ws": "^8.16.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
