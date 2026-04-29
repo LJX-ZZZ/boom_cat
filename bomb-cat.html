@@ -117,12 +117,12 @@ body {
   align-items: center; gap: 6px; transition: all .3s;
   z-index: 10;
 }
-.player-seat.bottom { bottom: 160px; left: 50%; transform: translateX(-50%); }
-.player-seat.top { top: 10px; left: 50%; transform: translateX(-50%); }
+.player-seat.bottom { bottom: 160px; left: 50%; transform: translateX(-50%); z-index: 15; }
+.player-seat.top { top: 10px; left: 50%; transform: translateX(-50%); z-index: 15; }
 .player-seat.left { left: 20px; top: 50%; transform: translateY(-50%); }
 .player-seat.right { right: 20px; top: 50%; transform: translateY(-50%); }
-.player-seat.top-left { top: 10px; left: 15%; }
-.player-seat.top-right { top: 10px; right: 15%; }
+.player-seat.top-left { top: 10px; left: 15%; z-index: 12; }
+.player-seat.top-right { top: 10px; right: 15%; z-index: 12; }
 .player-seat.mid-left { left: 15px; top: 30%; }
 .player-seat.mid-right { right: 15px; top: 30%; }
 
@@ -518,9 +518,9 @@ body {
 .gravestone-input:focus { border-color: var(--accent-gold); }
 .gravestone-input::placeholder { color: #666; }
 
-.player-name { font-size: 12px; font-weight: 600; color: var(--text-dim); }
-.player-name.current-name { color: var(--accent-gold); }
-.player-card-count { font-size: 11px; color: var(--text-dim); }
+.player-name { font-size: 12px; font-weight: 600; color: var(--text-dim); text-shadow: 0 1px 3px rgba(0,0,0,0.8); white-space: nowrap; max-width: 80px; overflow: hidden; text-overflow: ellipsis; }
+.player-name.current-name { color: var(--accent-gold); text-shadow: 0 0 6px rgba(245,200,66,0.5); }
+.player-card-count { font-size: 11px; color: var(--text-dim); text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
 .player-effects {
   display: flex; gap: 4px; flex-wrap: wrap; justify-content: center;
 }
@@ -961,6 +961,7 @@ body {
   transform: translateX(-50%);
   font-size: 10px; font-weight: 700;
   color: #ffd700; white-space: nowrap;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.9);
 }
 .turn-timer-ring .timer-text.urgent {
   color: #ff4444;
@@ -1342,6 +1343,8 @@ body {
 .peek-cat-wrapper.stage-docked {
   left: -22px; top: 50%; transform: translateY(-50%);
   animation: catPeekBreath 4s ease-in-out infinite;
+  padding: 12px; /* 扩大手机端点击热区 */
+  margin-left: -12px;
 }
 @keyframes catPeekBreath {
   0%, 100% { left: -28px; }
@@ -1540,7 +1543,7 @@ body {
   opacity: 0; pointer-events: none; transition: opacity .3s;
 }
 .book-opening-overlay.show { opacity: 1; pointer-events: auto; }
-.book-anim { width: 180px; height: 260px; position: relative; perspective: 800px; }
+.book-anim { width: 180px; height: 260px; position: relative; perspective: 800px; margin: 0 auto; }
 .book-anim-cover {
   position: absolute; width: 100%; height: 100%;
   background: linear-gradient(145deg, #6B3410, #8B4513, #A0522D);
@@ -1550,6 +1553,8 @@ body {
   box-shadow: 4px 4px 15px rgba(0,0,0,0.6), inset 0 0 30px rgba(0,0,0,0.3);
   transform-origin: left center;
   transition: transform .7s cubic-bezier(.645,.045,.355,1);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 .book-anim-cover.open { transform: rotateY(-150deg); }
 .book-anim-page {
@@ -2004,15 +2009,16 @@ body {
       <div class="login-section">
         <div style="font-size:14px;color:var(--text-light);margin-bottom:10px;">👤 游客登录</div>
         <input type="text" class="mp-input" id="guest-nickname"
-               placeholder="输入昵称（2-10个字符）" maxlength="10" autocomplete="off"
+               placeholder="输入昵称（2-10个字符）" maxlength="10"
+               autocorrect="off" autocapitalize="off" spellcheck="false"
                style="font-size:15px;letter-spacing:0;margin-bottom:12px;">
-        <button class="start-btn" style="width:100%;" id="guest-login-btn"
+        <button type="button" class="start-btn" style="width:100%;" id="guest-login-btn"
                 onclick="SFX.click(); LoginModal.guestLogin()">🎮 游客登录</button>
       </div>
       <div class="login-divider"><span>其他登录方式</span></div>
       <div class="login-social-btns">
-        <button class="login-social-btn login-wechat" onclick="SFX.click(); LoginModal.socialComingSoon('微信')">💬 微信登录</button>
-        <button class="login-social-btn login-qq" onclick="SFX.click(); LoginModal.socialComingSoon('QQ')">🐧 QQ登录</button>
+        <button type="button" class="login-social-btn login-wechat" onclick="SFX.click(); LoginModal.socialComingSoon('微信')">💬 微信登录</button>
+        <button type="button" class="login-social-btn login-qq" onclick="SFX.click(); LoginModal.socialComingSoon('QQ')">🐧 QQ登录</button>
       </div>
     </div>
     <!-- 即将开放提示 -->
@@ -2747,12 +2753,13 @@ const EasterEgg = (() => {
 
   // ---- 拖拽逻辑 ----
   const onDragStart = (e) => {
-    e.preventDefault();
     isDragging = false;
     const touch = e.touches ? e.touches[0] : e;
     const rect = catEl.getBoundingClientRect();
     dragOffset.x = touch.clientX - rect.left;
     dragOffset.y = touch.clientY - rect.top;
+    // 只在有鼠标时preventDefault（防止选中文字），touch不prevent让click正常触发
+    if (!e.touches) e.preventDefault();
     catEl.classList.add('stage-dragging');
     catEl.style.left = rect.left + 'px';
     catEl.style.top = rect.top + 'px';
@@ -3671,6 +3678,7 @@ const Encyclopedia = {
       grid.classList.add('enc-flip-out');
       await new Promise(r => setTimeout(r, 300));
       this.renderCards();
+      this.renderTabs();
       this.renderNav();
       const newGrid = $('enc-grid');
       if (newGrid) {
@@ -3679,6 +3687,7 @@ const Encyclopedia = {
       }
     } else {
       this.renderCards();
+      this.renderTabs();
       this.renderNav();
     }
 
@@ -3832,9 +3841,26 @@ const Encyclopedia = {
 const LoginModal = {
   pendingAction: null, // 'create' | 'join'
 
+  _safeGetItem(key) {
+    try { return localStorage.getItem(key); }
+    catch (e) { return null; }
+  },
+
+  _safeSetItem(key, val) {
+    try { localStorage.setItem(key, val); return true; }
+    catch (e) { return false; }
+  },
+
+  _safeRemoveItem(key) {
+    try { localStorage.removeItem(key); }
+    catch (e) { /* ignore */ }
+  },
+
   getUser() {
     try {
-      return JSON.parse(localStorage.getItem('bombcat_user'));
+      const raw = this._safeGetItem('bombcat_user');
+      if (!raw) return null;
+      return JSON.parse(raw);
     } catch { return null; }
   },
 
@@ -3855,7 +3881,11 @@ const LoginModal = {
       $('guest-nickname').value = u.nickname;
     }
     overlay.classList.add('show');
-    setTimeout(() => $('guest-nickname').focus(), 300);
+    // iOS Safari: 延长延迟确保动画完成后再focus
+    setTimeout(() => {
+      const input = $('guest-nickname');
+      if (input) input.focus({ preventScroll: true });
+    }, 400);
   },
 
   close() {
@@ -3866,7 +3896,10 @@ const LoginModal = {
   backToLogin() {
     $('login-content').style.display = 'block';
     $('login-coming-soon').style.display = 'none';
-    setTimeout(() => $('guest-nickname').focus(), 200);
+    setTimeout(() => {
+      const input = $('guest-nickname');
+      if (input) input.focus({ preventScroll: true });
+    }, 300);
   },
 
   socialComingSoon(name) {
@@ -3876,13 +3909,14 @@ const LoginModal = {
   },
 
   guestLogin() {
-    const nickname = $('guest-nickname').value.trim();
+    const input = $('guest-nickname');
+    const nickname = (input ? input.value : '').trim();
     if (nickname.length < 2) {
-      $('guest-nickname').style.borderColor = '#e94560';
-      $('guest-nickname').setAttribute('placeholder', '昵称至少2个字符哦！');
+      if (input) input.style.borderColor = '#e94560';
+      if (input) input.setAttribute('placeholder', '昵称至少2个字符哦！');
       setTimeout(() => {
-        $('guest-nickname').style.borderColor = '';
-        $('guest-nickname').setAttribute('placeholder', '输入昵称（2-10个字符）');
+        if (input) input.style.borderColor = '';
+        if (input) input.setAttribute('placeholder', '输入昵称（2-10个字符）');
       }, 1500);
       return;
     }
@@ -3894,7 +3928,10 @@ const LoginModal = {
       emoji: '😊',
       imageUrl: null,
     };
-    localStorage.setItem('bombcat_user', JSON.stringify(userData));
+    if (!this._safeSetItem('bombcat_user', JSON.stringify(userData))) {
+      // iOS隐私模式下localStorage不可用，使用内存缓存
+      this._memoryUser = userData;
+    }
 
     this.close();
 
@@ -3929,7 +3966,8 @@ const LoginModal = {
   },
 
   logout() {
-    localStorage.removeItem('bombcat_user');
+    this._safeRemoveItem('bombcat_user');
+    this._memoryUser = null;
     this.renderStatusBar();
   },
 };
@@ -4569,7 +4607,7 @@ const Game = {
   },
 
   // ---- 掷骰子动画 ----
-  async rollDice() {
+  async rollDice(label) {
     // 移除旧骰子
     document.querySelectorAll('.dice-container, .dice-result-popup').forEach(e => e.remove());
 
@@ -4608,7 +4646,7 @@ const Game = {
     // 弹出结果
     const popup = document.createElement('div');
     popup.className = 'dice-result-popup';
-    popup.textContent = `💣 炸弹滚过 ${result} 个玩家！`;
+    popup.textContent = label ? label.replace('{n}', result) : `💣 炸弹滚过 ${result} 个玩家！`;
     document.body.appendChild(popup);
 
     await delay(1800);
@@ -5222,9 +5260,12 @@ const Game = {
             potatoBomb.turnsSinceLit = 0;
             this.addLog(`🥔 炸弹被点燃了！引信3回合！`, 'danger');
             await delay(400);
-            // 随机顺时针传递
-            const passCount = rand(1, this.alivePlayers().length);
+            // 掷骰子决定传递次数
+            const passCount = await this.rollDice(`🥔 烫手山芋！传递 {n} 次！`);
+            this.addLog(`🎲 骰子 ${passCount} 点！炸弹随机传递 ${passCount} 次！`);
+            await delay(300);
             let currentHolder = potatoBomb.holderId;
+            await this.playBombRollAnimation(currentHolder, passCount);
             for (let i = 0; i < passCount; i++) {
               let next = this.nextAlivePlayerId(currentHolder);
               // 跳过闭关锁国玩家
@@ -5252,8 +5293,11 @@ const Game = {
             // 炸弹已点燃，直接随机传递
             this.addLog(`🥔 ${player.name} 的烫手山芋！引燃的炸弹随机传递！`, 'danger');
             await delay(400);
-            const passCount = rand(1, this.alivePlayers().length);
+            const passCount = await this.rollDice(`🥔 烫手山芋！传递 {n} 次！`);
+            this.addLog(`🎲 骰子 ${passCount} 点！炸弹随机传递 ${passCount} 次！`);
+            await delay(300);
             let currentHolder = potatoBomb.holderId;
+            await this.playBombRollAnimation(currentHolder, passCount);
             for (let i = 0; i < passCount; i++) {
               let next = this.nextAlivePlayerId(currentHolder);
               let attempts = 0;
